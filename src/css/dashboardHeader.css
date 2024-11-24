@@ -1,0 +1,16 @@
+.dashboard-header {
+    background-color: #e0f7fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .dashboard-header h2 {
+    margin-bottom: 10px;
+  }
+  
+  .dashboard-header p {
+    font-size: 1rem;
+  }
+  

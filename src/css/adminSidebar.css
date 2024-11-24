@@ -1,0 +1,36 @@
+/* .sidebar {
+  width: 200px;
+  background-color: #f0f0f0;
+  padding: 20px;
+  height: 100vh;
+  position: fixed;
+  z-index: 1;
+}
+
+.sidebar-logo {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-menu li {
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.sidebar-menu ul {
+  padding-left: 15px;
+  list-style: none;
+} */
+
+a{
+  color: #fff !important;
+}
+a:hover{
+  color: #bea3a3 !important;
+}
