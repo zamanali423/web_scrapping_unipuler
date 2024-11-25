@@ -5,17 +5,11 @@ import io from "socket.io-client";
 import { userContext } from "../context/userContext/userContext";
 import { toast } from "react-toastify";
 
-const socket = io("wss://webscrappingbackend.vercel.app", {
-  transports: ["websocket"],
-  reconnection: true,
-  reconnectionAttempts: 5,
-  reconnectionDelay: 2000
-});
+const socket = io("ws://webscrappingbackend.vercel.app");
 
 socket.on("connect_error", (error) => {
   console.error("WebSocket connection error:", error);
 });
-
 
 socket.on("connect", () => {
   console.log("Connected to WebSocket server");
