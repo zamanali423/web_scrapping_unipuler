@@ -5,7 +5,18 @@ import io from "socket.io-client";
 import { userContext } from "../context/userContext/userContext";
 import { toast } from "react-toastify";
 
-const socket = io("https://webscrappingbackend.vercel.app/");
+const socket = io("https://webscrappingbackend.vercel.app", {
+  transports: ["websocket", "polling"], // Explicitly specify transports
+  withCredentials: true // Ensure cookies and credentials are sent
+});
+
+socket.on("connect", () => {
+  console.log("Connected to WebSocket server");
+});
+
+socket.on("connect_error", (error) => {
+  console.error("Connection error:", error);
+});
 
 const ProjectTable = ({ projects, setprojects }) => {
   const [projectStatus, setProjectStatus] = useState({});
