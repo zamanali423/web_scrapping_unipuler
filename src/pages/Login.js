@@ -38,8 +38,8 @@ const Login = () => {
       localStorage.setItem("token", data.token);
       setToken(data.token);
       toast(data.msg);
-      setisLoading(false);
       navigate("/");
+      setisLoading(false);
     } catch (error) {
       console.log(error);
       setisLoading(false);
