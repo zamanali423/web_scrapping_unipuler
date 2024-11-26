@@ -1,24 +1,17 @@
 // components/ProjectTable.js
 import React, { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import io from "socket.io-client";
 import { userContext } from "../context/userContext/userContext";
 import { toast } from "react-toastify";
+import RealTimeUpdates from "../pages/RealTimeUpdates";
 
 const socket = io("ws://webscrappingbackend.vercel.app");
-
-socket.on("connect_error", (error) => {
-  console.error("WebSocket connection error:", error);
-});
-
-socket.on("connect", () => {
-  console.log("Connected to WebSocket server");
-});
 
 const ProjectTable = ({ projects, setprojects }) => {
   const [projectStatus, setProjectStatus] = useState({});
   const [ifNoCategory, setifNoCategory] = useState(false);
-  const { setShowSpecificProject } = useContext(userContext);
+  const { setShowSpecificProject, logout } = useContext(userContext);
 
   useEffect(() => {
     socket.on("projectStatusUpdate", (data) => {
@@ -49,7 +42,7 @@ const ProjectTable = ({ projects, setprojects }) => {
   // const handleDelete = async (id) => {
   //   try {
   //     const res = await fetch(
-  //       `https://webscrappingbackend.vercel.app/api/projects/delete/${id}`,
+  //       `http://localhost:5000/api/projects/delete/${id}`,
   //       {
   //         method: "DELETE",
   //       }
@@ -68,7 +61,20 @@ const ProjectTable = ({ projects, setprojects }) => {
   //   }
   // };
 
-  //! retry project
+  // Utility function to check for token expiration
+  const handleTokenExpiration = (res, data) => {
+    if (
+      res.status === 401 ||
+      data?.msg === "Token Expired. Please log in again."
+    ) {
+      logout();
+      Navigate("/login");
+      return true; // Indicates token has expired
+    }
+    return false; // Token is valid
+  };
+
+  // Handle retry with token expiration check
   const handleRetry = async (project) => {
     try {
       const newProject = {
@@ -80,91 +86,99 @@ const ProjectTable = ({ projects, setprojects }) => {
         date: new Date(),
       };
 
-      const res = await fetch("https://webscrappingbackend.vercel.app/api/projects/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newProject),
-      });
+      const res = await fetch(
+        "https://webscrappingbackend.vercel.app/api/projects/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(newProject),
+        }
+      );
 
-      if (!res.ok) {
-        throw new Error("Failed to add project");
-      }
-      const createdProject = await res.json();
-      console.log(createdProject);
-      // handleDelete(project._id);
+      const data = await res.json();
 
-      // Update the projects state to include the newly created project
-      setprojects((prevProjects) => [...prevProjects, createdProject]);
+      if (handleTokenExpiration(res, data)) return;
+
+      if (!res.ok) throw new Error(data.message || "Failed to add project");
+
+      setprojects((prevProjects) => [...prevProjects, data]);
     } catch (error) {
-      console.error("Error adding project:", error);
+      console.error("Error adding project:", error.message);
     }
   };
-  //! specific project
+  // Handle fetching specific projects
   const handleSpecificProject = async (project) => {
-    console.log("specific", project.businessCategory);
     try {
-      const response = await fetch(
+      const res = await fetch(
         `https://webscrappingbackend.vercel.app/specific-lead/${encodeURIComponent(
           project.businessCategory
         )}`,
         {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
 
-      if (!response.ok) {
-        console.error(
-          `Failed to show project. Status: ${response.status} ${response.statusText}`
-        );
+      const data = await res.json();
+
+      if (handleTokenExpiration(res, data)) return;
+
+      if (!res.ok) {
         setifNoCategory(true);
         setShowSpecificProject([]);
         toast(`No project found for ${project.businessCategory}`);
         return;
       }
 
-      const projectData = await response.json();
-
-      if (projectData.length === 0) {
+      if (data.length === 0) {
         setifNoCategory(true);
         setShowSpecificProject([]);
         toast.info(`No project found for ${project.businessCategory}`);
       } else {
-        setShowSpecificProject(projectData);
+        setShowSpecificProject(data);
         setifNoCategory(false);
       }
     } catch (error) {
       console.error("Error showing project:", error.message);
-      setifNoCategory(false);
       toast.error("An error occurred while fetching project data");
     }
   };
 
-  //! cancel project
+  // Handle canceling a project
   const handleCancel = async (project) => {
     try {
-      console.log("cancel", project.projectId);
-      const lead = await fetch(
-        `https://webscrappingbackend.vercel.app/cancelLead?projectId=${project.projectId}`
+      const res = await fetch(
+        `https://webscrappingbackend.vercel.app/cancelLead?projectId=${project.projectId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
-      if (!lead.ok) {
-        console.log("Failed to cancel project");
-        return;
-      }
-      console.log(lead);
-      /* when cancel project status will change to canceled */
+
+      const data = await res.json();
+
+      if (handleTokenExpiration(res, data)) return;
+
+      if (!res.ok) throw new Error(data.message || "Failed to cancel project");
+
       setProjectStatus((prevStatus) => ({
         ...prevStatus,
-        [project.id]: "Canceled",
+        [project.projectId]: "Canceled",
       }));
-      toast("Cancel Your Project Successfully");
+
+      toast.success("Project canceled successfully");
     } catch (error) {
-      console.error("Error adding project:", error);
+      console.error("Error canceling project:", error.message);
+      toast.error("An error occurred while canceling the project");
     }
   };
 
@@ -238,6 +252,7 @@ const ProjectTable = ({ projects, setprojects }) => {
           )}
         </tbody>
       </table>
+      <RealTimeUpdates />
     </div>
   );
 };
