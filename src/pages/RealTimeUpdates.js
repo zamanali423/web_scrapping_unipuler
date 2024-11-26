@@ -9,8 +9,9 @@ function RealTimeUpdates() {
   useEffect(() => {
     socket.on("batchUpdate", (batch) => {
       setData((prevData) => [...prevData, ...batch]);
+      console.log("scrapping result data backend...");
     });
-
+    console.log("scrapping...");
     socket.on("scrapingComplete", (message) => {
       console.log(message);
     });
