@@ -100,7 +100,7 @@ const Login = () => {
               required
             />
           </div>
-          <button type="submit" className="btn btn-primary w-100">
+          <button type="submit" className="btn btn-primary w-100" disabled={isLoading}>
            {isLoading ? "Loging..." : "Login"}
           </button>
         </form>
