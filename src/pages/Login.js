@@ -101,7 +101,7 @@ const Login = () => {
             />
           </div>
           <button type="submit" className="btn btn-primary w-100">
-            Login
+           {isLoading ? "Loging..." : "Login"}
           </button>
         </form>
       </div>
