@@ -25,7 +25,6 @@ function RealTimeUpdates() {
 
   return (
     <div>
-      <h1>Live Scraping Data</h1>
       {data.map((item, index) => (
         <div key={index}>
           <h3>{item.storeName}</h3>
