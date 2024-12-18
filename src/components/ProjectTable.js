@@ -252,8 +252,7 @@ const ProjectTable = ({ projects, setprojects }) => {
           )}
         </tbody>
       </table>
-      //<RealTimeUpdates />
-            <h1>Please wait a few minutes until the data is scraped. </h1>
+      <h1>Please wait a few minutes until the data is scraped.</h1>
     </div>
   );
 };
